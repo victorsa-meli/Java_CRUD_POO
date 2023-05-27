@@ -1,13 +1,7 @@
 package src.metodos;
 
 import src.entity.Cliente;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Scanner;
 
 public class Menu {
@@ -16,6 +10,13 @@ public class Menu {
 
 
     public void telaPrincipal(){
+        //BASE DE DADOS PARA TESTE
+        clientes.add(new Cliente("João", 20, "12345678910", "01/01/2000"));
+        clientes.add(new Cliente("Maria", 30, "12345678911", "01/01/1990"));
+        clientes.add(new Cliente("José", 40, "12345678912", "01/01/1980"));
+        clientes.add(new Cliente("Pedro", 50, "12345678913", "01/01/1970"));
+        clientes.add(new Cliente("Ana", 60, "12345678914", "01/01/1960"));
+
         while (true) {
             menuPrincipal();
 
@@ -44,7 +45,7 @@ public class Menu {
             case "6" -> System.exit(0);
             default -> {
                 System.out.println("Opção inválida!");
-                telaPrincipal();
+                menuPrincipal();
             }
         }
     }
@@ -53,7 +54,7 @@ public class Menu {
         if (clientes.isEmpty()) {
             cleanConsole();
             System.out.println("Não há clientes cadastrados!");
-            telaPrincipal();
+            menuPrincipal();
         } else {
             for (Cliente cliente : clientes) {
                 System.out.println("\n Nome: " + cliente.getNome()+
@@ -68,7 +69,7 @@ public class Menu {
         var op = scanner.nextInt();
         try {
             if (op == 1) {
-                telaPrincipal();
+                menuPrincipal();
             }
         } catch (Exception e) {
             cleanConsole();
@@ -79,22 +80,22 @@ public class Menu {
 
     private void excluirMenu(ArrayList<Cliente> clientes) {
         System.out.println("Digite o cpf do cliente que deseja excluir: ");
-        var cpf = scanner.next();
+        String cpf = scanner.next().replaceAll("\\D", "");
+
 
         if (clientes.isEmpty()) {
             System.out.println("Não há clientes cadastrados!");
-            telaPrincipal();
+            menuPrincipal();
         }
 
-        for (Cliente cliente : clientes) {
-            if (cliente.getCpf().equals(cpf)) {
-                clientes.remove(cliente);
+        for (int i = 0; i < clientes.size(); i++) {
+            if (clientes.get(i).getCpf().equals(cpf)) {
+                clientes.remove(i);
                 System.out.println("Cliente excluído com sucesso!");
                 msgRetornoExclusao(clientes);
             } else {
-                cleanConsole();
                 System.out.println("CPF não encontrado! ");
-                excluirMenu(clientes);
+                msgRetornoExclusao(clientes);
             }
         }
     }
@@ -107,7 +108,7 @@ public class Menu {
             if (op == 1) {
                 excluirMenu(clientes);
             } else if (op == 2) {
-                telaPrincipal();
+                menuPrincipal();
 
             }
 
@@ -120,14 +121,13 @@ public class Menu {
 
     private void alterarMenu(ArrayList<Cliente> clientes) {
         System.out.println("Digite o cpf do cliente que deseja alterar: ");
-        var cpf = scanner.next();
+        var cpf = scanner.next().replaceAll("\\D", "");
 
-        formatarCpf(cpf);
 
         if (clientes.isEmpty()) {
             cleanConsole();
             System.out.println("Não há clientes cadastrados!");
-            telaPrincipal();
+            menuPrincipal();
         }
         for (Cliente cliente : clientes) {
             if (cliente.getCpf().equals(cpf)) {
@@ -161,7 +161,7 @@ public class Menu {
         if (clientes.isEmpty()) {
             cleanConsole();
             System.out.println("Não há clientes cadastrados!");
-            telaPrincipal();
+            menuPrincipal();
         }
         for (Cliente cliente : clientes) {
             if (cliente.getCpf().equalsIgnoreCase(cpf)) {
@@ -185,8 +185,6 @@ public class Menu {
 
 
     public String formatarCpf(String cpf) {
-        // Remover caracteres não numéricos
-        cpf = cpf.replaceAll("\\D", "");
 
         // Verificar se o CPF tem 11 dígitos
         if (cpf.length() != 11) {
@@ -206,6 +204,11 @@ public class Menu {
         return cpfFormatado.toString();
     }
 
+    public static String limparFormatacaoCPF(String cpfFormatado) {
+        // Remover caracteres não numéricos
+        return cpfFormatado.replaceAll("\\D", "");
+    }
+
     private void msgRetornoAlteracao(ArrayList<Cliente> clientes) {
         System.out.println("Digite 1 - para alterar outro cliente.");
         System.out.println("Digite 2 - Voltar ao menu principal.");
@@ -214,7 +217,7 @@ public class Menu {
             if (op == 1) {
                 alterarMenu(clientes);
             } else if (op == 2) {
-                telaPrincipal();
+                menuPrincipal();
 
             }
         } catch (Exception e) {
@@ -232,7 +235,7 @@ public class Menu {
             if (op == 1) {
                 pesquisarCliente(clientes);
             } else if (op == 2) {
-                telaPrincipal();
+                menuPrincipal();
 
             }
 
@@ -252,7 +255,7 @@ public class Menu {
             if (op == 1) {
                 cadastroMenu(clientes);
             } else if (op == 2) {
-                telaPrincipal();
+                menuPrincipal();
             }
 
         } catch (Exception e) {
