@@ -5,6 +5,7 @@ import src.entity.Cliente;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
@@ -17,31 +18,9 @@ public class Menu {
     public void telaPrincipal(){
         while (true) {
             menuPrincipal();
-                var option = scanner.nextLine();
-
-                switch (option) {
-                    case "1" -> cadastroMenu(clientes);
-                    case "2" -> listarClientes(clientes);
-                    case "3" -> pesquisarCliente(clientes);
-                    case "4" -> alterarMenu(clientes);
-                    case "5" -> excluirMenu(clientes);
-                    case "6" -> System.exit(0);
-                    default -> {
-                        cleanConsole();
-                        System.out.println("Opção inválida!");
-                        telaPrincipal();
-                    }
-                }
 
         }
     }
-
-
-
-
-
-
-
 
     private void menuPrincipal() {
         System.out.println("______________________________________");
@@ -54,6 +33,20 @@ public class Menu {
         System.out.println("            5 - Excluir               ");
         System.out.println("            6 - Sair                  ");
         System.out.println("______________________________________");
+        var option = scanner.next();
+
+        switch (option) {
+            case "1" -> cadastroMenu(clientes);
+            case "2" -> listarClientes(clientes);
+            case "3" -> pesquisarCliente(clientes);
+            case "4" -> alterarMenu(clientes);
+            case "5" -> excluirMenu(clientes);
+            case "6" -> System.exit(0);
+            default -> {
+                System.out.println("Opção inválida!");
+                telaPrincipal();
+            }
+        }
     }
 
     private void listarClientes(ArrayList<Cliente> clientes) {
@@ -63,10 +56,10 @@ public class Menu {
             telaPrincipal();
         } else {
             for (Cliente cliente : clientes) {
-                System.out.println("\n Nome: " + cliente.getNome()
-                        + " ||  CPF: " + formatarCpf(cliente.getCpf())+
-                        " ||  Idade: " + cliente.getIdade() + " ||  Data de Nascimento: " +
-                        formatDataNascimento(cliente.getDataNascimento()));
+                System.out.println("\n Nome: " + cliente.getNome()+
+                                " ||  CPF: "+formatarCpf(cliente.getCpf())+
+                        " ||  Idade: " + cliente.getIdade() +
+                        " ||  Data de Nascimento: " +formatarDataNascimento(cliente.getDataNascimento()));
 
             }
         }
@@ -129,16 +122,17 @@ public class Menu {
         System.out.println("Digite o cpf do cliente que deseja alterar: ");
         var cpf = scanner.next();
 
+        formatarCpf(cpf);
+
         if (clientes.isEmpty()) {
             cleanConsole();
             System.out.println("Não há clientes cadastrados!");
             telaPrincipal();
         }
-
         for (Cliente cliente : clientes) {
             if (cliente.getCpf().equals(cpf)) {
                 System.out.println("NOME: ");
-                var nome = scanner.next();
+                String nome = scanner.skip("\\R?").nextLine().toUpperCase();
                 System.out.println("IDADE: ");
                 var idade = scanner.nextInt();
                 System.out.println("DATA DE NASCIMENTO: ");
@@ -148,7 +142,6 @@ public class Menu {
                 cliente.setIdade(idade);
                 cliente.setDataNascimento(dataNascimento);
 
-                cleanConsole();
                 System.out.println("Cliente alterado com sucesso!");
                 msgRetornoAlteracao(clientes);
             } else {
@@ -175,11 +168,10 @@ public class Menu {
                 System.out.println("NOME: " + cliente.getNome().toUpperCase());
                 System.out.println("IDADE: " + cliente.getIdade());
                 System.out.println("CPF: " + formatarCpf(cliente.getCpf()));
-                System.out.println("DATA DE NASCIMENTO: " + formatDataNascimento(cliente.getDataNascimento()));
+                System.out.println("DATA DE NASCIMENTO: "+formatarDataNascimento(cliente.getDataNascimento()));
                 System.out.println("\n_____________________________________________________");
                 msgRetornoPesquisa(clientes);
             } else {
-                cleanConsole();
                 System.out.println("CPF não encontrado! ");
                 msgRetornoPesquisa(clientes);
             }
@@ -190,19 +182,7 @@ public class Menu {
 
     }
 
-    private String formatDataNascimento(String dataNascimento) {
 
-            DateFormat formatoEntrada = new SimpleDateFormat("yyyyMMdd");
-            DateFormat formatoSaida = new SimpleDateFormat("dd/MM/yyyy");
-            try {
-                Date data = formatoEntrada.parse(dataNascimento);
-                return formatoSaida.format(data);
-            } catch (ParseException e) {
-                e.printStackTrace();
-                return dataNascimento; // Retorna a string original se não for possível formatar
-            }
-
-    }
 
     public String formatarCpf(String cpf) {
         // Remover caracteres não numéricos
@@ -280,7 +260,6 @@ public class Menu {
             System.out.println("Opção inválida");
             msgRetornoCadastro(clientes);
         }
-        telaPrincipal();
     }
 
     private void cadastroMenu(ArrayList<Cliente> clientes)  {
@@ -288,9 +267,9 @@ public class Menu {
         String nome = scanner.skip("\\R?").nextLine().toUpperCase();
         System.out.println("IDADE: ");
         var idade = scanner.nextInt();
-        var cpf = cadastraCpf().formatted("%s.%s.%s-%s");
+        var cpf = cadastraCpf();
         System.out.println("DATA DE NASCIMENTO: ");
-        var dataNascimento = scanner.next().formatted("%s/%s/%s");
+        var dataNascimento = scanner.next();
 
         clientes.add(new Cliente(nome, idade, cpf, dataNascimento));
         cleanConsole();
@@ -368,6 +347,28 @@ public class Menu {
 
             return (cpf.charAt(10) - '0') == digito2;
         }
+
+
+    public static String formatarDataNascimento(String dataNascimento) {
+        // Remover caracteres não numéricos
+        dataNascimento = dataNascimento.replaceAll("\\D", "");
+
+        // Verificar se a data de nascimento tem 8 dígitos
+        if (dataNascimento.length() != 8) {
+            return dataNascimento; // Retorna a string original se não tiver 8 dígitos
+        }
+
+        // Aplicar a máscara
+        StringBuilder dataFormatada = new StringBuilder();
+        dataFormatada.append(dataNascimento.substring(0, 2));
+        dataFormatada.append("/");
+        dataFormatada.append(dataNascimento.substring(2, 4));
+        dataFormatada.append("/");
+        dataFormatada.append(dataNascimento.substring(4, 8));
+
+        return dataFormatada.toString();
+    }
+
 
 
     private void cleanConsole() {
